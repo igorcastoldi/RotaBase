@@ -1,5 +1,5 @@
 # RotaBase
-
+ 
 **RotaBase** é uma plataforma (marketplace) de turismo de aventura que conecta viajantes a agências parceiras especializadas em passeios off-road, ecoturismo e experiências em dunas, trilhas e destinos naturais.
 
 Além do marketplace central, a plataforma oferece a cada agência parceira um **modo isolado** (página própria em `/agencia/[slug]`), permitindo que operem com identidade visual e fluxo de reservas dedicados.
