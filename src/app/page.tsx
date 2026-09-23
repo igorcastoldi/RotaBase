@@ -1,15 +1,11 @@
 import Link from 'next/link';
 import { Mountain, Instagram, Facebook, Youtube } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { Hero } from '@/components/home/Hero';
 import { TourShowcase } from '@/components/home/TourShowcase';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
-      {/* Navbar sincronizada em tempo real com a conta do usuário */}
-      <Navbar />
-
       <main>
         <Hero />
         <TourShowcase />
