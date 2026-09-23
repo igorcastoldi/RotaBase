@@ -1,56 +1,23 @@
 import Link from 'next/link';
 import { Mountain, Instagram, Facebook, Youtube } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 import { Hero } from '@/components/home/Hero';
 import { TourShowcase } from '@/components/home/TourShowcase';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
-      <SiteHeader />
+      {/* Navbar sincronizada em tempo real com a conta do usuário */}
+      <Navbar />
+
       <main>
         <Hero />
         <TourShowcase />
       </main>
+
+      {/* Seu rodapé completo mantido intacto */}
       <SiteFooter />
     </div>
-  );
-}
-
-function SiteHeader() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500">
-            <Mountain className="h-5 w-5 text-black" />
-          </span>
-          <span className="text-lg font-extrabold tracking-tight">
-            Rota<span className="text-orange-500">Base</span>
-          </span>
-        </Link>
-
-        <nav className="hidden items-center gap-8 text-sm font-medium text-neutral-300 md:flex">
-          <Link href="#passeios" className="transition hover:text-white">Passeios</Link>
-          <Link href="/explorar" className="transition hover:text-white">Explorar</Link>
-          <Link href="#passeios" className="transition hover:text-white">Destinos</Link>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/explorar"
-            className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-neutral-300 transition hover:text-white sm:block"
-          >
-            Entrar
-          </Link>
-          <Link
-            href="#passeios"
-            className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-black transition hover:bg-orange-400"
-          >
-            Reservar agora
-          </Link>
-        </div>
-      </div>
-    </header>
   );
 }
 
