@@ -15,19 +15,22 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          // Repassa 'options' para garantir que os cookies valham para a rota raiz '/'
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set({ name, value, ...options })
+          )
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set({ name, value, ...options })
           )
         },
       },
     }
   )
 
-  // Atualiza a sessão e impede o logout ao mudar de página
+  // Atualiza a sessão e renova o token em qualquer rota que o usuário navegar
   await supabase.auth.getUser()
 
   return supabaseResponse
