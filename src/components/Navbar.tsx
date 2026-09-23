@@ -10,10 +10,13 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  const supabase = createBrowserClient(
+  // A CORREÇÃO ESTÁ AQUI:
+  // Colocamos a criação do cliente dentro de um useState para garantir que a 
+  // conexão com o Supabase seja criada apenas uma vez e não se perca na navegação.
+  const [supabase] = useState(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  ))
 
   useEffect(() => {
     // 1. Verifica o usuário atual assim que a página carrega
