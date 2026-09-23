@@ -15,22 +15,19 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Repassa 'options' para garantir que os cookies valham para a rota raiz '/'
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set({ name, value, ...options })
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set({ name, value, ...options })
+            supabaseResponse.cookies.set(name, value, options)
           )
         },
       },
     }
   )
 
-  // Atualiza a sessão e renova o token em qualquer rota que o usuário navegar
+  // ESSA LINHA FORÇA O SITE A CHECAR SEU LOGIN ANTES DE TROCAR DE TELA
   await supabase.auth.getUser()
 
   return supabaseResponse
