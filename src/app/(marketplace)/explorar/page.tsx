@@ -7,17 +7,29 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExplorarPage() {
   const supabase = createServerClient();
-  const { data: agencies } = await supabase
-    .from('agencies')
-    .select('id, slug, name, logo_url, banner_url, avg_rating, total_reviews, hq_address')
-    .eq('is_active', true)
-    .order('avg_rating', { ascending: false });
+  const agencies = supabase
+    ? (
+        await supabase
+          .from('agencies')
+          .select('id, slug, name, logo_url, banner_url, avg_rating, total_reviews, hq_address')
+          .eq('is_active', true)
+          .order('avg_rating', { ascending: false })
+      ).data
+    : null;
+
+  const list = agencies ?? [];
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-extrabold text-stone-800 mb-8">Explorar Agências</h1>
+      {list.length === 0 && (
+        <div className="card p-10 text-center text-stone-500">
+          <p className="font-semibold text-stone-700">Nenhuma agência disponível no momento.</p>
+          <p className="text-sm mt-1">Volte em breve para descobrir novas experiências.</p>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {(agencies ?? []).map((agency) => (
+        {list.map((agency) => (
           <Link key={agency.id} href={`/agencia/${agency.slug}`}
             className="card hover:shadow-lg hover:-translate-y-0.5 transition group overflow-hidden p-0">
             <div className="relative h-40 bg-stone-200">

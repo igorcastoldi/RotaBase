@@ -1,58 +1,110 @@
 import Link from 'next/link';
-import { MapPin, Star, Users, ChevronRight } from 'lucide-react';
+import { Mountain, Instagram, Facebook, Youtube } from 'lucide-react';
+import { Hero } from '@/components/home/Hero';
+import { TourShowcase } from '@/components/home/TourShowcase';
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen">
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-stone-900 via-amber-900 to-stone-900 text-white py-28 px-4 text-center overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('/hero-bg.jpg')] bg-cover bg-center" />
-        <div className="relative max-w-3xl mx-auto space-y-6">
-          <span className="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 text-sm font-semibold px-4 py-1.5 rounded-full">
-            🏍️ A maior plataforma de aventura off-road do Brasil
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <TourShowcase />
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
+
+function SiteHeader() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500">
+            <Mountain className="h-5 w-5 text-black" />
           </span>
-          <h1 className="text-5xl md:text-6xl font-extrabold leading-tight">
-            Explore além<br />
-            <span className="text-amber-400">das fronteiras</span>
-          </h1>
-          <p className="text-lg text-stone-300 max-w-xl mx-auto">
-            Quadriciclos, UTVs e 4x4. Reserve seu passeio de aventura com as melhores agências do Brasil.
-          </p>
-          <Link href="/explorar"
-            className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg transition">
-            Explorar Passeios <ChevronRight className="w-5 h-5" />
+          <span className="text-lg font-extrabold tracking-tight">
+            Rota<span className="text-orange-500">Base</span>
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-8 text-sm font-medium text-neutral-300 md:flex">
+          <Link href="#passeios" className="transition hover:text-white">Passeios</Link>
+          <Link href="/explorar" className="transition hover:text-white">Explorar</Link>
+          <Link href="#passeios" className="transition hover:text-white">Destinos</Link>
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/explorar"
+            className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-neutral-300 transition hover:text-white sm:block"
+          >
+            Entrar
+          </Link>
+          <Link
+            href="#passeios"
+            className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-black transition hover:bg-orange-400"
+          >
+            Reservar agora
           </Link>
         </div>
-      </section>
+      </div>
+    </header>
+  );
+}
 
-      {/* Features */}
-      <section className="max-w-5xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[
-          { icon: MapPin, title: 'Agências Verificadas', desc: 'Parceiros certificados com equipamentos revisados e guias treinados.' },
-          { icon: Star, title: 'Avaliações Reais', desc: 'Comentários de clientes que realmente fizeram os passeios.' },
-          { icon: Users, title: 'Grupos e Famílias', desc: 'Passeios para todos os perfis: duplas, grupos e famílias.' },
-        ].map((f) => (
-          <div key={f.title} className="card text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-2xl mb-1">
-              <f.icon className="w-6 h-6 text-amber-600" />
+function SiteFooter() {
+  return (
+    <footer className="border-t border-white/10 bg-neutral-950">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-start justify-between gap-8 md:flex-row">
+          <div className="max-w-xs">
+            <div className="flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500">
+                <Mountain className="h-5 w-5 text-black" />
+              </span>
+              <span className="text-lg font-extrabold tracking-tight">
+                Rota<span className="text-orange-500">Base</span>
+              </span>
             </div>
-            <h3 className="font-bold text-stone-800 text-lg">{f.title}</h3>
-            <p className="text-stone-500 text-sm">{f.desc}</p>
+            <p className="mt-4 text-sm text-neutral-400">
+              O marketplace que conecta você aos melhores passeios off-road do Brasil, com segurança e operadores
+              verificados.
+            </p>
           </div>
-        ))}
-      </section>
 
-      {/* CTA */}
-      <section className="bg-amber-500 py-16 px-4 text-center text-white">
-        <h2 className="text-3xl font-extrabold mb-4">É dono de uma agência de aventura?</h2>
-        <p className="text-amber-100 mb-8 max-w-lg mx-auto">
-          Cadastre sua empresa na RotaBase e alcance milhares de aventureiros em todo o Brasil.
-        </p>
-        <Link href="/auth/cadastro"
-          className="inline-block bg-white text-amber-600 font-bold px-8 py-3.5 rounded-2xl shadow hover:bg-amber-50 transition">
-          Cadastrar Minha Agência
-        </Link>
-      </section>
-    </main>
+          <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">
+            <FooterCol title="Explorar" links={['Passeios', 'Destinos', 'Operadores']} />
+            <FooterCol title="Empresa" links={['Sobre nós', 'Segurança', 'Contato']} />
+            <FooterCol title="Suporte" links={['Central de ajuda', 'Cancelamentos', 'Termos']} />
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+          <p className="text-xs text-neutral-500">© {new Date().getFullYear()} RotaBase. Todos os direitos reservados.</p>
+          <div className="flex items-center gap-3 text-neutral-400">
+            <Link href="#" aria-label="Instagram" className="transition hover:text-orange-400"><Instagram className="h-5 w-5" /></Link>
+            <Link href="#" aria-label="Facebook" className="transition hover:text-orange-400"><Facebook className="h-5 w-5" /></Link>
+            <Link href="#" aria-label="YouTube" className="transition hover:text-orange-400"><Youtube className="h-5 w-5" /></Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function FooterCol({ title, links }: { title: string; links: string[] }) {
+  return (
+    <div>
+      <h4 className="font-bold text-white">{title}</h4>
+      <ul className="mt-3 space-y-2 text-neutral-400">
+        {links.map((l) => (
+          <li key={l}>
+            <Link href="#passeios" className="transition hover:text-orange-400">{l}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
