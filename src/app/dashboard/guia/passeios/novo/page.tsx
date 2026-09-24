@@ -3,8 +3,7 @@ import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Bike, Clock, Users, UploadCloud, ImageIcon, Tag, CheckCircle2 } from 'lucide-react';
 
-// CORREÇÃO: O "Field" foi movido para FORA da função principal. 
-// Assim ele não é destruído a cada letra que digitas!
+// 🚨 A CORREÇÃO ESTÁ AQUI: O "Field" tem de ficar FORA da função principal 🚨
 const Field = ({ label, error, children, hint }: any) => (
   <div>
     <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">{label}</label>
@@ -16,7 +15,7 @@ const Field = ({ label, error, children, hint }: any) => (
   </div>
 );
 
-export default function NovoPasseio() {
+export default function NovoPasseioGuia() {
   const supabase = createBrowserClient();
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
@@ -99,7 +98,8 @@ export default function NovoPasseio() {
             <Bike className="w-5 h-5 text-gray-900" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-widest text-orange-500">Meu Painel &middot; Criar</p>
+            {/* Título alterado para Guia para teres a certeza que a página atualizou */}
+            <p className="text-xs uppercase tracking-widest text-orange-500">Meu Painel &middot; Guia</p>
             <h1 className="text-2xl font-bold tracking-tight text-gray-50">Adicionar Passeio de Quadriciclo/UTV</h1>
           </div>
         </div>
