@@ -8,7 +8,6 @@ export default function GuiasEmpresa() {
   const [guias, setGuias] = useState<any[]>([]);
   const [novoGuiaId, setNovoGuiaId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [empresaId, setEmpresaId] = useState('');
 
   useEffect(() => {
     carregarGuias();
@@ -18,20 +17,22 @@ export default function GuiasEmpresa() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    setEmpresaId(user.id);
 
-    // Ajustado para puxar corretamente os dados da tabela users
+    // A correção está no "users!guide_id": diz ao sistema a ligação exata a utilizar
     const { data, error } = await supabase
       .from('company_guides')
       .select(`
         guide_id,
         created_at,
-        usuario:users!company_guides_guide_id_fkey(full_name, email)
+        guia:users!guide_id(
+          full_name,
+          email
+        )
       `)
       .eq('company_id', user.id);
 
     if (error) {
-      console.error("Erro ao puxar guias:", error);
+      console.error("Erro ao carregar guias:", error);
     } else if (data) {
       setGuias(data);
     }
@@ -50,11 +51,10 @@ export default function GuiasEmpresa() {
       .insert({ company_id: user.id, guide_id: novoGuiaId.trim() });
 
     if (error) {
-      // Se der erro 23505, significa que tentou adicionar um guia que já lá está
       if (error.code === '23505') {
          alert('Este guia já faz parte da tua equipa!');
       } else {
-         alert(`Erro: ${error.message}`);
+         alert(`Erro ao adicionar: ${error.message}`);
       }
     } else {
       setNovoGuiaId('');
@@ -63,12 +63,15 @@ export default function GuiasEmpresa() {
   }
 
   async function removerGuia(guideId: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     if (!confirm('Tens a certeza que queres remover este guia da tua agência?')) return;
 
     const { error } = await supabase
       .from('company_guides')
       .delete()
-      .eq('company_id', empresaId)
+      .eq('company_id', user.id)
       .eq('guide_id', guideId);
 
     if (!error) carregarGuias();
@@ -117,12 +120,12 @@ export default function GuiasEmpresa() {
               <tr><td colSpan={2} className="p-8 text-center text-stone-500">Ainda não tens nenhum guia na tua equipa.</td></tr>
             ) : (
               guias.map((ligacao) => {
-                const guia = Array.isArray(ligacao.usuario) ? ligacao.usuario[0] : ligacao.usuario;
+                const info = Array.isArray(ligacao.guia) ? ligacao.guia[0] : ligacao.guia;
                 return (
                   <tr key={ligacao.guide_id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition">
                     <td className="p-4">
-                      <p className="font-bold text-stone-800">{guia?.full_name || 'Guia (Sem nome)'}</p>
-                      <p className="text-sm text-stone-500">{guia?.email}</p>
+                      <p className="font-bold text-stone-800">{info?.full_name || 'Guia (Sem nome)'}</p>
+                      <p className="text-sm text-stone-500">{info?.email}</p>
                     </td>
                     <td className="p-4 text-right">
                       <button
