@@ -20,7 +20,6 @@ function getRegiaoPadrao(local: string): string {
   if (l.includes('pantanal')) return 'Pantanal - MT';
   if (l.includes('amazonia')) return 'Amazônia - AM';
 
-  // Capitaliza a primeira letra caso seja uma região nova
   return local.charAt(0).toUpperCase() + local.slice(1);
 }
 
@@ -47,7 +46,6 @@ export default function HomePage() {
     setLoading(false);
   }
 
-  // Verifica se o passeio foi criado nos últimos 7 dias (para a aba Novos)
   function ehPasseioNovo(createdAt: string) {
     if (!createdAt) return false;
     const umaSemanaMs = 7 * 24 * 60 * 60 * 1000;
@@ -55,12 +53,10 @@ export default function HomePage() {
     return diferenca <= umaSemanaMs;
   }
 
-  // Extrai e padroniza dinamicamente todas as regiões cadastradas
   const regioesDinamicas = Array.from(
     new Set(passeios.map(p => getRegiaoPadrao(p.location)).filter(Boolean))
   );
 
-  // Filtra os passeios de acordo com a aba ativa
   const passeiosFiltrados = passeios.filter(passeio => {
     const regiaoPadronizada = getRegiaoPadrao(passeio.location);
     if (filtroAtivo === 'Novos') {
@@ -77,7 +73,6 @@ export default function HomePage() {
       <main>
         <Hero />
 
-        {/* Seção de Vitrine de Passeios com Correção Automática e Waze */}
         <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
             <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-xs font-semibold mb-4 uppercase tracking-wider">
@@ -91,7 +86,6 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Abas de Filtro (Novos + Regiões Padronizadas Automaticamente) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-10 scrollbar-none justify-start sm:justify-center">
             <button
               onClick={() => setFiltroAtivo('Novos')}
@@ -130,7 +124,6 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Lista de Passeios */}
           {loading ? (
             <div className="text-center py-20 text-neutral-500 animate-pulse font-semibold">
               Carregando passeios disponíveis...
@@ -151,7 +144,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {passeiosFiltrados.map((passeio) => {
                 const regiaoOficial = getRegiaoPadrao(passeio.location);
-                const operadorNome = passeio.operator_name || 'Operador Verificado';
+                const empresaNome = passeio.company_name || 'Operador Verificado';
                 const wazeUrl = `https://www.waze.com/ul?q=${encodeURIComponent(passeio.location || 'Trilha Off-Road')}`;
 
                 return (
@@ -162,21 +155,20 @@ export default function HomePage() {
                       ) : (
                         <Bike className="w-12 h-12 text-neutral-600" />
                       )}
-                      <span className="absolute top-3 left-3 bg-neutral-950/80 backdrop-blur-sm text-orange-400 text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider border border-neutral-800">
+                      <span className="absolute top-3 left-3 bg-neutral-950/80 backdrop-blur-sm text-orange-400 text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider border border-gray-800">
                         Quadriciclo / UTV
                       </span>
                     </div>
 
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        {/* Nome da Empresa Responsável */}
+                        {/* Nome da Empresa Responsável inserido pela Agência/Guia */}
                         <div className="mb-2">
-                          <span className="text-xs text-neutral-400">Operado por: <strong className="text-orange-400 font-semibold">{operadorNome}</strong></span>
+                          <span className="text-xs text-neutral-400">Operado por: <strong className="text-orange-400 font-semibold">{empresaNome}</strong></span>
                         </div>
 
                         <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{passeio.title}</h3>
                         
-                        {/* Região Padronizada Automaticamente + Botão Waze */}
                         <div className="flex items-center justify-between mb-4 gap-2">
                           <p className="text-xs text-orange-400 flex items-center gap-1 font-medium bg-orange-500/10 px-2.5 py-1 rounded border border-orange-500/20 truncate">
                             <MapPin className="w-3.5 h-3.5 shrink-0" /> {regiaoOficial}
@@ -249,8 +241,7 @@ function SiteFooter() {
               </span>
             </div>
             <p className="mt-4 text-sm text-neutral-400">
-              O marketplace que conecta você aos melhores passeios off-road do Brasil, com segurança e operadores
-              verificados.
+              O marketplace que conecta você aos melhores passeios off-road do Brasil, com segurança e operadores verificados.
             </p>
           </div>
 
