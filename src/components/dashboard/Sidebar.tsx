@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import {
   Mountain, LayoutDashboard, ClipboardList, Settings,
-  Compass, Ticket, LogOut, MapPinned, PlusCircle, Calendar, Map
+  Compass, Ticket, LogOut, MapPinned, PlusCircle, Calendar, Map, Users
 } from 'lucide-react';
 
 interface Props {
@@ -25,6 +25,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { href: '/dashboard/empresa/passeios', label: 'Meus Passeios', icon: Map },
     { href: '/dashboard/empresa/passeios/novo', label: 'Adicionar Passeio', icon: PlusCircle },
     { href: '/dashboard/empresa/horarios', label: 'Horários', icon: Calendar },
+    { href: '/dashboard/empresa/guias', label: 'Meus Guias', icon: Users },
     { href: '/dashboard/empresa/configuracoes', label: 'Configurações', icon: Settings },
   ],
   guia: [
