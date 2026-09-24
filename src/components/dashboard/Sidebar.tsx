@@ -30,7 +30,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
   ],
   guia: [
     { href: '/dashboard/guia', label: 'Painel', icon: LayoutDashboard },
-    { href: '/dashboard/guia/lotes', label: 'Meus Lotes', icon: MapPinned },
+    { href: '/dashboard/guia/grupos', label: 'Meus Grupos', icon: Users },
     { href: '/dashboard/guia/passeios', label: 'Meus Passeios', icon: Map },
     { href: '/dashboard/guia/passeios/novo', label: 'Adicionar Passeio', icon: PlusCircle },
     { href: '/dashboard/guia/horarios', label: 'Horários', icon: Calendar },
