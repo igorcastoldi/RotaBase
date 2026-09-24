@@ -80,12 +80,12 @@ export default function GuideDashboard({ guideId }: { guideId: string }) {
       {!selectedSchedule ? (
         <div className="space-y-3">
           <h2 className="font-semibold text-stone-300 flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" /> Lotes de Hoje
+            <CalendarDays className="w-4 h-4" /> Grupos de Hoje
           </h2>
           {loading ? (
             <div className="text-center py-8 text-stone-500 animate-pulse">Carregando...</div>
           ) : schedules.length === 0 ? (
-            <div className="text-center py-12 text-stone-500">Nenhum lote agendado para hoje.</div>
+            <div className="text-center py-12 text-stone-500">Nenhum grupo agendado para hoje.</div>
           ) : (
             schedules.map((s) => (
               <button
