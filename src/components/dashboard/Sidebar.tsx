@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import {
   Mountain, LayoutDashboard, ClipboardList, Settings,
-  Compass, Ticket, LogOut, MapPinned,
+  Compass, Ticket, LogOut, MapPinned, PlusCircle, Calendar, Map
 } from 'lucide-react';
 
 interface Props {
@@ -19,18 +19,20 @@ interface NavItem {
 }
 
 const NAV_BY_ROLE: Record<string, NavItem[]> = {
-  proprietario: [
+  empresa: [
     { href: '/dashboard/empresa', label: 'Painel', icon: LayoutDashboard },
     { href: '/dashboard/empresa/reservas', label: 'Reservas', icon: ClipboardList },
-    { href: '/dashboard/empresa/configuracoes', label: 'Configurações', icon: Settings },
-  ],
-  admin_empresa: [
-    { href: '/dashboard/empresa', label: 'Painel', icon: LayoutDashboard },
-    { href: '/dashboard/empresa/reservas', label: 'Reservas', icon: ClipboardList },
+    { href: '/dashboard/empresa/passeios', label: 'Meus Passeios', icon: Map },
+    { href: '/dashboard/empresa/passeios/novo', label: 'Adicionar Passeio', icon: PlusCircle },
+    { href: '/dashboard/empresa/horarios', label: 'Horários', icon: Calendar },
     { href: '/dashboard/empresa/configuracoes', label: 'Configurações', icon: Settings },
   ],
   guia: [
-    { href: '/dashboard/guia', label: 'Meus Lotes', icon: MapPinned },
+    { href: '/dashboard/guia', label: 'Painel', icon: LayoutDashboard },
+    { href: '/dashboard/guia/lotes', label: 'Meus Lotes', icon: MapPinned },
+    { href: '/dashboard/guia/passeios', label: 'Meus Passeios', icon: Map },
+    { href: '/dashboard/guia/passeios/novo', label: 'Adicionar Passeio', icon: PlusCircle },
+    { href: '/dashboard/guia/horarios', label: 'Horários', icon: Calendar },
   ],
   cliente: [
     { href: '/dashboard/cliente', label: 'Minhas Reservas', icon: Ticket },
