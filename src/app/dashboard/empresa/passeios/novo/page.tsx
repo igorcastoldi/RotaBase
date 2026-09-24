@@ -3,7 +3,6 @@ import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Bike, Clock, Users, UploadCloud, ImageIcon, Tag, CheckCircle2 } from 'lucide-react';
 
-// O "Field" FORA da função para o teclado não travar
 const Field = ({ label, error, children, hint }: any) => (
   <div>
     <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">{label}</label>
@@ -18,9 +17,9 @@ const Field = ({ label, error, children, hint }: any) => (
 export default function NovoPasseio() {
   const supabase = createBrowserClient();
   const [nome, setNome] = useState('');
-  const [preco, setPreco] = useState('');
+  const [precoPorPessoa, setPrecoPorPessoa] = useState('');
   const [duracao, setDuracao] = useState('');
-  const [unidadeDuracao, setUnidadeDuracao] = useState('horas'); // Novo estado para Horas/Minutos
+  const [unidadeDuracao, setUnidadeDuracao] = useState('horas');
   const [lotacao, setLotacao] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState<{ url: string; name: string } | null>(null);
@@ -47,7 +46,7 @@ export default function NovoPasseio() {
   function validate() {
     const errs: Record<string, string> = {};
     if (!nome.trim()) errs.nome = 'Informe o nome do passeio.';
-    if (!preco || Number(preco) <= 0) errs.preco = 'Informe um preço válido.';
+    if (!precoPorPessoa || Number(precoPorPessoa) <= 0) errs.precoPorPessoa = 'Informe um preço válido.';
     if (!duracao || Number(duracao) <= 0) errs.duracao = 'Informe a duração.';
     if (!lotacao || Number(lotacao) <= 0) errs.lotacao = 'Informe a lotação máxima.';
     if (!descricao.trim()) errs.descricao = 'Descreva o trajeto do passeio.';
@@ -62,7 +61,6 @@ export default function NovoPasseio() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return alert('Sessão expirada. Faz login novamente.');
 
-    // Calcular horas e minutos com base na escolha do utilizador
     let horasSalvas = 0;
     let minutosSalvos = 0;
 
@@ -74,13 +72,18 @@ export default function NovoPasseio() {
       horasSalvas = Number((minutosSalvos / 60).toFixed(1));
     }
 
-    // Enviar para o Supabase preenchendo as DUAS colunas
+    const precoUnitario = parseFloat(precoPorPessoa);
+    const maxPessoas = parseInt(lotacao);
+    const receitaTotalPotencial = precoUnitario * maxPessoas;
+
+    // Enviar para o Supabase gravando o preço por pessoa e o preço total calculado
     const { error } = await supabase.from('tours').insert({
       title: nome,
-      price: parseFloat(preco),
+      price: receitaTotalPotencial,         // Preço total para compatibilidade com a lista
+      price_per_person: precoUnitario,    // Preço exato por pessoa
       duration: horasSalvas,
       duration_minutes: minutosSalvos,
-      max_people: parseInt(lotacao),
+      max_people: maxPessoas,
       description: descricao,
       created_by: user.id
     });
@@ -96,7 +99,7 @@ export default function NovoPasseio() {
   }
 
   function handleReset() {
-    setNome(''); setPreco(''); setDuracao(''); setLotacao(''); setDescricao('');
+    setNome(''); setPrecoPorPessoa(''); setDuracao(''); setLotacao(''); setDescricao('');
     setUnidadeDuracao('horas');
     setImagem(null); setErrors({});
   }
@@ -131,17 +134,17 @@ export default function NovoPasseio() {
             </Field>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Field label="Preço (R$)" error={errors.preco}>
+              <Field label="Preço por Pessoa (R$)" error={errors.precoPorPessoa}>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    className={`${inputBase} pl-9 ${errors.preco ? inputErr : inputOk}`}
-                    placeholder="250,00"
-                    value={preco}
-                    onChange={(e) => setPreco(e.target.value)}
+                    className={`${inputBase} pl-9 ${errors.precoPorPessoa ? inputErr : inputOk}`}
+                    placeholder="120,00"
+                    value={precoPorPessoa}
+                    onChange={(e) => setPrecoPorPessoa(e.target.value)}
                   />
                 </div>
               </Field>
@@ -175,7 +178,7 @@ export default function NovoPasseio() {
                     min="0"
                     step="1"
                     className={`${inputBase} pr-10 ${errors.lotacao ? inputErr : inputOk}`}
-                    placeholder="8"
+                    placeholder="10"
                     value={lotacao}
                     onChange={(e) => setLotacao(e.target.value)}
                   />
@@ -268,7 +271,7 @@ export default function NovoPasseio() {
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                   <span className="flex items-center gap-1.5 text-orange-500 font-semibold tabular-nums">
                     <Tag className="w-3.5 h-3.5" />
-                    {preco ? `R$ ${Number(preco).toFixed(2).replace('.', ',')}` : 'R$ --'}
+                    {precoPorPessoa ? `R$ ${Number(precoPorPessoa).toFixed(2).replace('.', ',')} / pes.` : 'R$ --'}
                   </span>
                   <span className="flex items-center gap-1.5 text-gray-400 tabular-nums">
                     <Clock className="w-3.5 h-3.5" />
