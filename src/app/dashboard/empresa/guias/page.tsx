@@ -18,15 +18,14 @@ export default function GuiasEmpresa() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // A correção está no "users!guide_id": diz ao sistema a ligação exata a utilizar
+    // Pedimos apenas o full_name, já que a coluna email não existe na tabela pública
     const { data, error } = await supabase
       .from('company_guides')
       .select(`
         guide_id,
         created_at,
-        guia:users!guide_id(
-          full_name,
-          email
+        guia:users!company_guides_guide_id_fkey(
+          full_name
         )
       `)
       .eq('company_id', user.id);
@@ -125,7 +124,7 @@ export default function GuiasEmpresa() {
                   <tr key={ligacao.guide_id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition">
                     <td className="p-4">
                       <p className="font-bold text-stone-800">{info?.full_name || 'Guia (Sem nome)'}</p>
-                      <p className="text-sm text-stone-500">{info?.email}</p>
+                      <p className="text-sm text-stone-500">ID: {ligacao.guide_id.slice(0, 8)}...</p>
                     </td>
                     <td className="p-4 text-right">
                       <button
