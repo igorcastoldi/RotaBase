@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { Bike, Clock, Users, UploadCloud, ImageIcon, Tag, CheckCircle2 } from 'lucide-react';
+import { Bike, Clock, Users, Tag, CheckCircle2, UploadCloud, ImageIcon, MapPin } from 'lucide-react';
 
 const Field = ({ label, error, children, hint }: any) => (
   <div>
@@ -17,6 +17,7 @@ const Field = ({ label, error, children, hint }: any) => (
 export default function NovoPasseio() {
   const supabase = createBrowserClient();
   const [nome, setNome] = useState('');
+  const [localizacao, setLocalizacao] = useState('');
   const [precoPorPessoa, setPrecoPorPessoa] = useState('');
   const [duracao, setDuracao] = useState('');
   const [unidadeDuracao, setUnidadeDuracao] = useState('horas');
@@ -46,6 +47,7 @@ export default function NovoPasseio() {
   function validate() {
     const errs: Record<string, string> = {};
     if (!nome.trim()) errs.nome = 'Informe o nome do passeio.';
+    if (!localizacao.trim()) errs.localizacao = 'Informe a localização ou região.';
     if (!precoPorPessoa || Number(precoPorPessoa) <= 0) errs.precoPorPessoa = 'Informe um preço válido.';
     if (!duracao || Number(duracao) <= 0) errs.duracao = 'Informe a duração.';
     if (!lotacao || Number(lotacao) <= 0) errs.lotacao = 'Informe a lotação máxima.';
@@ -59,7 +61,7 @@ export default function NovoPasseio() {
     if (!validate()) return;
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('Sessão expirada. Faz login novamente.');
+    if (!user) return alert('Sessão expirada. Faça login novamente.');
 
     let horasSalvas = 0;
     let minutosSalvos = 0;
@@ -76,15 +78,16 @@ export default function NovoPasseio() {
     const maxPessoas = parseInt(lotacao);
     const receitaTotalPotencial = precoUnitario * maxPessoas;
 
-    // Enviar para o Supabase gravando o preço por pessoa e o preço total calculado
     const { error } = await supabase.from('tours').insert({
       title: nome,
-      price: receitaTotalPotencial,         // Preço total para compatibilidade com a lista
-      price_per_person: precoUnitario,    // Preço exato por pessoa
+      location: localizacao,
+      price: receitaTotalPotencial,
+      price_per_person: precoUnitario,
       duration: horasSalvas,
       duration_minutes: minutosSalvos,
       max_people: maxPessoas,
       description: descricao,
+      image_url: imagem ? imagem.url : null, // Salva a imagem direto no banco
       created_by: user.id
     });
 
@@ -99,9 +102,8 @@ export default function NovoPasseio() {
   }
 
   function handleReset() {
-    setNome(''); setPrecoPorPessoa(''); setDuracao(''); setLotacao(''); setDescricao('');
-    setUnidadeDuracao('horas');
-    setImagem(null); setErrors({});
+    setNome(''); setLocalizacao(''); setPrecoPorPessoa(''); setDuracao(''); setLotacao(''); setDescricao('');
+    setUnidadeDuracao('horas'); setImagem(null); setErrors({});
   }
 
   const inputBase = "w-full bg-gray-800 border text-gray-100 placeholder-gray-500 px-4 py-2.5 text-sm rounded-sm focus:outline-none focus:ring-1 transition-colors";
@@ -122,7 +124,6 @@ export default function NovoPasseio() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Form */}
           <form onSubmit={handleSubmit} className="lg:col-span-3 bg-gray-900 border border-gray-800 rounded-sm p-6 sm:p-8 space-y-6">
             <Field label="Nome do Passeio" error={errors.nome}>
               <input
@@ -131,6 +132,18 @@ export default function NovoPasseio() {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
               />
+            </Field>
+
+            <Field label="Localização / Região" error={errors.localizacao}>
+              <div className="relative">
+                <input
+                  className={`${inputBase} pl-10 ${errors.localizacao ? inputErr : inputOk}`}
+                  placeholder="Ex: Lagoa do Bacupari, Terceira Lagoa - RS"
+                  value={localizacao}
+                  onChange={(e) => setLocalizacao(e.target.value)}
+                />
+                <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              </div>
             </Field>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -232,7 +245,7 @@ export default function NovoPasseio() {
                   <div className="py-4 flex flex-col items-center">
                     <UploadCloud className="w-8 h-8 text-orange-500 mb-3" />
                     <p className="text-sm text-gray-300">Arraste uma imagem aqui ou <span className="text-orange-500">clique para enviar</span></p>
-                    <p className="text-xs text-gray-500 mt-1">Apenas pré-visualização visual por agora.</p>
+                    <p className="text-xs text-gray-500 mt-1">PNG ou JPG</p>
                   </div>
                 )}
               </div>
@@ -268,6 +281,11 @@ export default function NovoPasseio() {
               </div>
               <div className="p-5 space-y-3">
                 <h3 className="text-lg font-bold text-gray-50 text-balance">{nome || 'Nome do passeio'}</h3>
+                {localizacao && (
+                  <p className="text-xs text-orange-400 flex items-center gap-1 font-medium">
+                    <MapPin className="w-3.5 h-3.5" /> {localizacao}
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                   <span className="flex items-center gap-1.5 text-orange-500 font-semibold tabular-nums">
                     <Tag className="w-3.5 h-3.5" />
