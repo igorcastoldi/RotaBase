@@ -3,8 +3,7 @@ import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Bike, Clock, Users, UploadCloud, ImageIcon, Tag, CheckCircle2 } from 'lucide-react';
 
-// CORREÇÃO: O "Field" foi movido para FORA da função principal. 
-// Assim ele não é destruído a cada letra que digitas!
+// O "Field" FORA da função para o teclado não travar
 const Field = ({ label, error, children, hint }: any) => (
   <div>
     <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">{label}</label>
@@ -21,6 +20,7 @@ export default function NovoPasseio() {
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [duracao, setDuracao] = useState('');
+  const [unidadeDuracao, setUnidadeDuracao] = useState('horas'); // Novo estado para Horas/Minutos
   const [lotacao, setLotacao] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState<{ url: string; name: string } | null>(null);
@@ -48,7 +48,7 @@ export default function NovoPasseio() {
     const errs: Record<string, string> = {};
     if (!nome.trim()) errs.nome = 'Informe o nome do passeio.';
     if (!preco || Number(preco) <= 0) errs.preco = 'Informe um preço válido.';
-    if (!duracao || Number(duracao) <= 0) errs.duracao = 'Informe a duração em horas.';
+    if (!duracao || Number(duracao) <= 0) errs.duracao = 'Informe a duração.';
     if (!lotacao || Number(lotacao) <= 0) errs.lotacao = 'Informe a lotação máxima.';
     if (!descricao.trim()) errs.descricao = 'Descreva o trajeto do passeio.';
     setErrors(errs);
@@ -62,11 +62,24 @@ export default function NovoPasseio() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return alert('Sessão expirada. Faz login novamente.');
 
-    // Enviar para o Supabase
+    // Calcular horas e minutos com base na escolha do utilizador
+    let horasSalvas = 0;
+    let minutosSalvos = 0;
+
+    if (unidadeDuracao === 'horas') {
+      horasSalvas = parseFloat(duracao);
+      minutosSalvos = Math.round(horasSalvas * 60);
+    } else {
+      minutosSalvos = parseInt(duracao);
+      horasSalvas = Number((minutosSalvos / 60).toFixed(1));
+    }
+
+    // Enviar para o Supabase preenchendo as DUAS colunas
     const { error } = await supabase.from('tours').insert({
       title: nome,
       price: parseFloat(preco),
-      duration: parseFloat(duracao),
+      duration: horasSalvas,
+      duration_minutes: minutosSalvos,
       max_people: parseInt(lotacao),
       description: descricao,
       created_by: user.id
@@ -84,6 +97,7 @@ export default function NovoPasseio() {
 
   function handleReset() {
     setNome(''); setPreco(''); setDuracao(''); setLotacao(''); setDescricao('');
+    setUnidadeDuracao('horas');
     setImagem(null); setErrors({});
   }
 
@@ -132,18 +146,25 @@ export default function NovoPasseio() {
                 </div>
               </Field>
 
-              <Field label="Duração (horas)" error={errors.duracao}>
-                <div className="relative">
+              <Field label="Duração" error={errors.duracao}>
+                <div className="flex">
                   <input
                     type="number"
                     min="0"
-                    step="0.5"
-                    className={`${inputBase} pr-10 ${errors.duracao ? inputErr : inputOk}`}
-                    placeholder="2"
+                    step="any"
+                    className={`${inputBase} rounded-r-none border-r-0 focus:z-10 ${errors.duracao ? inputErr : inputOk}`}
+                    placeholder="Ex: 2"
                     value={duracao}
                     onChange={(e) => setDuracao(e.target.value)}
                   />
-                  <Clock className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <select
+                    value={unidadeDuracao}
+                    onChange={(e) => setUnidadeDuracao(e.target.value)}
+                    className="bg-gray-800 border border-gray-700 text-gray-300 px-2 py-2.5 text-sm rounded-r-sm focus:outline-none focus:ring-1 focus:border-orange-500 focus:ring-orange-500"
+                  >
+                    <option value="horas">Horas</option>
+                    <option value="minutos">Min.</option>
+                  </select>
                 </div>
               </Field>
 
@@ -251,7 +272,7 @@ export default function NovoPasseio() {
                   </span>
                   <span className="flex items-center gap-1.5 text-gray-400 tabular-nums">
                     <Clock className="w-3.5 h-3.5" />
-                    {duracao ? `${duracao}h` : '-- h'}
+                    {duracao ? `${duracao} ${unidadeDuracao === 'horas' ? 'h' : 'min'}` : '--'}
                   </span>
                   <span className="flex items-center gap-1.5 text-gray-400 tabular-nums">
                     <Users className="w-3.5 h-3.5" />
