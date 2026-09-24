@@ -3,6 +3,19 @@ import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Bike, Clock, Users, UploadCloud, ImageIcon, Tag, CheckCircle2 } from 'lucide-react';
 
+// CORREÇÃO: O "Field" foi movido para FORA da função principal. 
+// Assim ele não é destruído a cada letra que digitas!
+const Field = ({ label, error, children, hint }: any) => (
+  <div>
+    <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">{label}</label>
+    {children}
+    <div className="mt-1 flex justify-between">
+      <span className="text-xs text-red-400">{error || ''}</span>
+      {hint && <span className="text-xs text-gray-500">{hint}</span>}
+    </div>
+  </div>
+);
+
 export default function NovoPasseio() {
   const supabase = createBrowserClient();
   const [nome, setNome] = useState('');
@@ -78,17 +91,6 @@ export default function NovoPasseio() {
   const inputOk = "border-gray-700 focus:border-orange-500 focus:ring-orange-500";
   const inputErr = "border-red-500 focus:border-red-500 focus:ring-red-500";
 
-  const Field = ({ label, error, children, hint }: any) => (
-    <div>
-      <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">{label}</label>
-      {children}
-      <div className="mt-1 flex justify-between">
-        <span className="text-xs text-red-400">{error || ''}</span>
-        {hint && <span className="text-xs text-gray-500">{hint}</span>}
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-950 font-sans text-gray-100 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto">
@@ -97,7 +99,7 @@ export default function NovoPasseio() {
             <Bike className="w-5 h-5 text-gray-900" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-widest text-orange-500">Meu Painel &middot; Empresa</p>
+            <p className="text-xs uppercase tracking-widest text-orange-500">Meu Painel &middot; Criar</p>
             <h1 className="text-2xl font-bold tracking-tight text-gray-50">Adicionar Passeio de Quadriciclo/UTV</h1>
           </div>
         </div>
