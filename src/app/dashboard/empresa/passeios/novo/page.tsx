@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
-import { Bike, Clock, Users, Tag, CheckCircle2, UploadCloud, ImageIcon, MapPin } from 'lucide-react';
+import { Bike, Clock, Users, Tag, CheckCircle2, UploadCloud, ImageIcon, MapPin, Building2 } from 'lucide-react';
 
 const Field = ({ label, error, children, hint }: any) => (
   <div>
@@ -17,6 +17,7 @@ const Field = ({ label, error, children, hint }: any) => (
 export default function NovoPasseio() {
   const supabase = createBrowserClient();
   const [nome, setNome] = useState('');
+  const [empresa, setEmpresa] = useState('');
   const [localizacao, setLocalizacao] = useState('');
   const [precoPorPessoa, setPrecoPorPessoa] = useState('');
   const [duracao, setDuracao] = useState('');
@@ -47,6 +48,7 @@ export default function NovoPasseio() {
   function validate() {
     const errs: Record<string, string> = {};
     if (!nome.trim()) errs.nome = 'Informe o nome do passeio.';
+    if (!empresa.trim()) errs.empresa = 'Informe o nome da empresa.';
     if (!localizacao.trim()) errs.localizacao = 'Informe a localização ou região.';
     if (!precoPorPessoa || Number(precoPorPessoa) <= 0) errs.precoPorPessoa = 'Informe um preço válido.';
     if (!duracao || Number(duracao) <= 0) errs.duracao = 'Informe a duração.';
@@ -80,6 +82,7 @@ export default function NovoPasseio() {
 
     const { error } = await supabase.from('tours').insert({
       title: nome,
+      company_name: empresa,
       location: localizacao,
       price: receitaTotalPotencial,
       price_per_person: precoUnitario,
@@ -87,7 +90,7 @@ export default function NovoPasseio() {
       duration_minutes: minutosSalvos,
       max_people: maxPessoas,
       description: descricao,
-      image_url: imagem ? imagem.url : null, // Salva a imagem direto no banco
+      image_url: imagem ? imagem.url : null,
       created_by: user.id
     });
 
@@ -102,7 +105,7 @@ export default function NovoPasseio() {
   }
 
   function handleReset() {
-    setNome(''); setLocalizacao(''); setPrecoPorPessoa(''); setDuracao(''); setLotacao(''); setDescricao('');
+    setNome(''); setEmpresa(''); setLocalizacao(''); setPrecoPorPessoa(''); setDuracao(''); setLotacao(''); setDescricao('');
     setUnidadeDuracao('horas'); setImagem(null); setErrors({});
   }
 
@@ -134,11 +137,23 @@ export default function NovoPasseio() {
               />
             </Field>
 
+            <Field label="Nome da Empresa / Operador" error={errors.empresa}>
+              <div className="relative">
+                <input
+                  className={`${inputBase} pl-10 ${errors.empresa ? inputErr : inputOk}`}
+                  placeholder="Ex: Além das Dunas"
+                  value={empresa}
+                  onChange={(e) => setEmpresa(e.target.value)}
+                />
+                <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              </div>
+            </Field>
+
             <Field label="Localização / Região" error={errors.localizacao}>
               <div className="relative">
                 <input
                   className={`${inputBase} pl-10 ${errors.localizacao ? inputErr : inputOk}`}
-                  placeholder="Ex: Lagoa do Bacupari, Terceira Lagoa - RS"
+                  placeholder="Ex: Lagoa do Bacupari - RS"
                   value={localizacao}
                   onChange={(e) => setLocalizacao(e.target.value)}
                 />
@@ -205,7 +220,7 @@ export default function NovoPasseio() {
                 rows={5}
                 maxLength={DESC_LIMIT}
                 className={`${inputBase} resize-none ${errors.descricao ? inputErr : inputOk}`}
-                placeholder="Descreva o percurso, pontos de parada, nível de dificuldade..."
+                placeholder="Descreva o percurso, pontos de parada..."
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
               />
@@ -245,7 +260,6 @@ export default function NovoPasseio() {
                   <div className="py-4 flex flex-col items-center">
                     <UploadCloud className="w-8 h-8 text-orange-500 mb-3" />
                     <p className="text-sm text-gray-300">Arraste uma imagem aqui ou <span className="text-orange-500">clique para enviar</span></p>
-                    <p className="text-xs text-gray-500 mt-1">PNG ou JPG</p>
                   </div>
                 )}
               </div>
@@ -280,6 +294,7 @@ export default function NovoPasseio() {
                 )}
               </div>
               <div className="p-5 space-y-3">
+                <p className="text-xs text-gray-400">Operado por: <strong className="text-orange-400">{empresa || 'Nome da Empresa'}</strong></p>
                 <h3 className="text-lg font-bold text-gray-50 text-balance">{nome || 'Nome do passeio'}</h3>
                 {localizacao && (
                   <p className="text-xs text-orange-400 flex items-center gap-1 font-medium">
@@ -295,14 +310,7 @@ export default function NovoPasseio() {
                     <Clock className="w-3.5 h-3.5" />
                     {duracao ? `${duracao} ${unidadeDuracao === 'horas' ? 'h' : 'min'}` : '--'}
                   </span>
-                  <span className="flex items-center gap-1.5 text-gray-400 tabular-nums">
-                    <Users className="w-3.5 h-3.5" />
-                    {lotacao ? `até ${lotacao} pessoas` : '-- pessoas'}
-                  </span>
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed text-pretty border-t border-gray-800 pt-3">
-                  {descricao || 'A descrição do trajeto aparecerá aqui conforme você preenche o formulário.'}
-                </p>
               </div>
             </div>
           </div>
