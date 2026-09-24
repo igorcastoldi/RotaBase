@@ -20,20 +20,21 @@ export default function GuiasEmpresa() {
     if (!user) return;
     setEmpresaId(user.id);
 
-    // Busca os guias ligados a esta empresa especificando a chave estrangeira correta
+    // Ajustado para puxar corretamente os dados da tabela users
     const { data, error } = await supabase
       .from('company_guides')
       .select(`
         guide_id,
         created_at,
-        guia_info:users!company_guides_guide_id_fkey (
-          full_name,
-          email
-        )
+        usuario:users!company_guides_guide_id_fkey(full_name, email)
       `)
       .eq('company_id', user.id);
 
-    if (data) setGuias(data);
+    if (error) {
+      console.error("Erro ao puxar guias:", error);
+    } else if (data) {
+      setGuias(data);
+    }
     setLoading(false);
   }
 
@@ -41,12 +42,20 @@ export default function GuiasEmpresa() {
     e.preventDefault();
     if (!novoGuiaId.trim()) return;
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const { error } = await supabase
       .from('company_guides')
-      .insert({ company_id: empresaId, guide_id: novoGuiaId.trim() });
+      .insert({ company_id: user.id, guide_id: novoGuiaId.trim() });
 
     if (error) {
-      alert('Erro ao adicionar guia. Verifica se o ID está correto ou se este guia já está na tua equipa.');
+      // Se der erro 23505, significa que tentou adicionar um guia que já lá está
+      if (error.code === '23505') {
+         alert('Este guia já faz parte da tua equipa!');
+      } else {
+         alert(`Erro: ${error.message}`);
+      }
     } else {
       setNovoGuiaId('');
       carregarGuias();
@@ -54,7 +63,7 @@ export default function GuiasEmpresa() {
   }
 
   async function removerGuia(guideId: string) {
-    if (!confirm('Tens a certeza que queres remover este guia da tua agência? Ele perderá o acesso aos passeios da empresa.')) return;
+    if (!confirm('Tens a certeza que queres remover este guia da tua agência?')) return;
 
     const { error } = await supabase
       .from('company_guides')
@@ -108,11 +117,11 @@ export default function GuiasEmpresa() {
               <tr><td colSpan={2} className="p-8 text-center text-stone-500">Ainda não tens nenhum guia na tua equipa.</td></tr>
             ) : (
               guias.map((ligacao) => {
-                const guia = Array.isArray(ligacao.guia_info) ? ligacao.guia_info[0] : ligacao.guia_info;
+                const guia = Array.isArray(ligacao.usuario) ? ligacao.usuario[0] : ligacao.usuario;
                 return (
                   <tr key={ligacao.guide_id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition">
                     <td className="p-4">
-                      <p className="font-bold text-stone-800">{guia?.full_name || 'Guia (Nome não definido)'}</p>
+                      <p className="font-bold text-stone-800">{guia?.full_name || 'Guia (Sem nome)'}</p>
                       <p className="text-sm text-stone-500">{guia?.email}</p>
                     </td>
                     <td className="p-4 text-right">
