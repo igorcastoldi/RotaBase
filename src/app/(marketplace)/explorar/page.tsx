@@ -1,59 +1,189 @@
-import { createServerClient } from '@/lib/supabase/server';
+'use client';
+import { useEffect, useState } from 'react';
+import { createBrowserClient } from '@/lib/supabase/client';
+import { Bike, Clock, Users, Tag, MapPin, Sparkles, Search } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Star, MapPin } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export default function ExplorarPasseios() {
+  const supabase = createBrowserClient();
+  const [passeios, setPasseios] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filtroAtivo, setFiltroAtivo] = useState('Novos'); // Começa na aba Novos por padrão
 
-export default async function ExplorarPage() {
-  const supabase = createServerClient();
-  const agencies = supabase
-    ? (
-        await supabase
-          .from('agencies')
-          .select('id, slug, name, logo_url, banner_url, avg_rating, total_reviews, hq_address')
-          .eq('is_active', true)
-          .order('avg_rating', { ascending: false })
-      ).data
-    : null;
+  useEffect(() => {
+    carregarPasseiosPublicos();
+  }, []);
 
-  const list = agencies ?? [];
+  async function carregarPasseiosPublicos() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('tours')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setPasseios(data);
+    }
+    setLoading(false);
+  }
+
+  // Função inteligente para detetar e agrupar regiões (mesmo se escrito diferente)
+  function regiaoCombina(localPasseio: string, abaSelecionada: string) {
+    if (abaSelecionada === 'Todas as regiões') return true;
+    if (!localPasseio) return false;
+
+    const normalizar = (str: string) => 
+      str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+    const loc = normalizar(localPasseio);
+    const aba = normalizar(abaSelecionada);
+
+    // Compara palavras-chave principais (ex: 'bacupari' bate com 'lagoa do bacupari · rs')
+    return aba.split(' ').some(palavra => palavra.length > 3 && loc.includes(palavra));
+  }
+
+  // Verifica se o passeio tem menos de 7 dias (ficará na aba Novos)
+  function ehPasseioNovo(createdAt: string) {
+    if (!createdAt) return false;
+    const umaSemanaMs = 7 * 24 * 60 * 60 * 1000;
+    const diferenca = new Date().getTime() - new Date(createdAt).getTime();
+    return diferenca <= umaSemanaMs;
+  }
+
+  // Extrai dinamicamente todas as regiões únicas cadastradas pelos guias/empresas
+  const regioesDinamicas = Array.from(new Set(passeios.map(p => p.location).filter(Boolean)));
+
+  // Filtra os passeios dependendo da aba selecionada
+  const passeiosFiltrados = passeios.filter(passeio => {
+    if (filtroAtivo === 'Novos') {
+      return ehPasseioNovo(passeio.created_at);
+    }
+    return regiaoCombina(passeio.location, filtroAtivo);
+  });
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-extrabold text-stone-800 mb-8">Explorar Agências</h1>
-      {list.length === 0 && (
-        <div className="card p-10 text-center text-stone-500">
-          <p className="font-semibold text-stone-700">Nenhuma agência disponível no momento.</p>
-          <p className="text-sm mt-1">Volte em breve para descobrir novas experiências.</p>
+    <div className="min-h-screen bg-gray-950 font-sans text-gray-100 p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-50 mb-3">
+            Explore as Melhores Trilhas
+          </h1>
+          <p className="text-gray-400 text-sm sm:text-base">
+            Selecione uma categoria ou região para ver os passeios de quadriciclo, UTV e 4×4 disponíveis com operadores verificados.
+          </p>
         </div>
-      )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {list.map((agency) => (
-          <Link key={agency.id} href={`/agencia/${agency.slug}`}
-            className="card hover:shadow-lg hover:-translate-y-0.5 transition group overflow-hidden p-0">
-            <div className="relative h-40 bg-stone-200">
-              {agency.banner_url
-                ? <Image src={agency.banner_url} alt={agency.name} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                : <div className="w-full h-full bg-gradient-to-br from-amber-200 to-orange-300" />}
-            </div>
-            <div className="p-4 space-y-1">
-              <h2 className="font-bold text-stone-800 group-hover:text-amber-600 transition">{agency.name}</h2>
-              {agency.hq_address && (
-                <p className="text-stone-500 text-xs flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />{agency.hq_address}
-                </p>
-              )}
-              {agency.total_reviews > 0 && (
-                <p className="text-amber-600 text-sm flex items-center gap-1 font-semibold">
-                  <Star className="w-3.5 h-3.5 fill-amber-500" />
-                  {agency.avg_rating.toFixed(1)} ({agency.total_reviews})
-                </p>
-              )}
-            </div>
-          </Link>
-        ))}
+
+        {/* Abas de Filtro (Incluindo a aba Novos e as regiões dinâmicas) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none justify-start sm:justify-center">
+          <button
+            onClick={() => setFiltroAtivo('Novos')}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+              filtroAtivo === 'Novos'
+                ? 'bg-orange-500 text-gray-950 shadow-lg shadow-orange-500/20'
+                : 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-800'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" /> Novos
+          </button>
+
+          <button
+            onClick={() => setFiltroAtivo('Todas as regiões')}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+              filtroAtivo === 'Todas as regiões'
+                ? 'bg-orange-500 text-gray-950 shadow-lg shadow-orange-500/20'
+                : 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-800'
+            }`}
+          >
+            Todas as regiões
+          </button>
+
+          {regioesDinamicas.map((regiao) => (
+            <button
+              key={regiao}
+              onClick={() => setFiltroAtivo(regiao)}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+                filtroAtivo === regiao
+                  ? 'bg-orange-500 text-gray-950 shadow-lg shadow-orange-500/20'
+                  : 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-800'
+              }`}
+            >
+              {regiao}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de Passeios */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-500 animate-pulse font-semibold">
+            Carregando passeios disponíveis...
+          </div>
+        ) : passeiosFiltrados.length === 0 ? (
+          <div className="bg-gray-900 rounded-sm border border-gray-800 border-dashed p-12 text-center flex flex-col items-center max-w-md mx-auto">
+            <Bike className="w-16 h-16 text-gray-700 mb-4" />
+            <h3 className="text-xl font-bold text-gray-200 mb-2">Nenhum passeio nesta aba</h3>
+            <p className="text-gray-400 text-sm mb-6">Não encontramos nenhum trajeto recente ou nesta região no momento.</p>
+            <button
+              onClick={() => setFiltroAtivo('Todas as regiões')}
+              className="bg-orange-500 hover:bg-orange-400 text-gray-950 px-6 py-2.5 rounded-sm font-semibold transition text-sm"
+            >
+              Ver todas as regiões
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {passeiosFiltrados.map((passeio) => (
+              <div key={passeio.id} className="bg-gray-900 rounded-sm border border-gray-800 overflow-hidden shadow-sm hover:border-gray-700 transition flex flex-col">
+                <div className="h-48 bg-gray-800 relative border-b border-gray-800 flex items-center justify-center overflow-hidden">
+                  {passeio.image_url ? (
+                    <img src={passeio.image_url} alt={passeio.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <Bike className="w-12 h-12 text-gray-600" />
+                  )}
+                  <span className="absolute top-3 left-3 bg-gray-950/80 backdrop-blur-sm text-orange-400 text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider border border-gray-800">
+                    Quadriciclo
+                  </span>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-100 mb-1 line-clamp-2">{passeio.title}</h3>
+                    {passeio.location && (
+                      <p className="text-xs text-orange-400 flex items-center gap-1 font-medium mb-4">
+                        <MapPin className="w-3.5 h-3.5" /> {passeio.location}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-400 mb-4">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        {passeio.duration}h
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-gray-500" />
+                        Até {passeio.max_people} pessoas
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-800 pt-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500">A partir de</p>
+                      <p className="text-lg font-black text-orange-500">
+                        R$ {Number(passeio.price_per_person || passeio.price).toFixed(2).replace('.', ',')}
+                        <span className="text-xs text-gray-400 font-normal"> / pessoa</span>
+                      </p>
+                    </div>
+                    <button className="bg-orange-500 hover:bg-orange-400 text-gray-950 font-bold px-4 py-2.5 rounded-sm text-sm transition">
+                      Agendar Passeio
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
